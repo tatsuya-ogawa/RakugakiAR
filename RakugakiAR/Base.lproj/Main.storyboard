@@ -26,9 +26,21 @@
                                     <constraint firstAttribute="height" constant="64" id="9XO-GK-f3B"/>
                                 </constraints>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="ジオメトリ化"/>
+                                <buttonConfiguration key="configuration" style="filled" title="materialize"/>
                                 <connections>
                                     <action selector="pressButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="D0O-Rh-HlF"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cMx-b8-0Jk">
+                                <rect key="frame" x="195" y="422" width="0.0" height="0.0"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="64" id="0ri-vB-8VZ"/>
+                                    <constraint firstAttribute="width" constant="256" id="jbe-Wc-jaG"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="share"/>
+                                <connections>
+                                    <action selector="writeButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="CkM-ZL-RlP"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -36,10 +48,12 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="Ban-wj-7zs" firstAttribute="bottom" secondItem="f6Y-9a-YCI" secondAttribute="bottomMargin" id="0Un-N6-0hr"/>
-                            <constraint firstAttribute="bottom" secondItem="F9y-H9-y15" secondAttribute="bottom" constant="128" id="8u6-Xw-Zq3"/>
+                            <constraint firstAttribute="bottom" secondItem="F9y-H9-y15" secondAttribute="bottom" constant="256" id="8u6-Xw-Zq3"/>
                             <constraint firstItem="Ban-wj-7zs" firstAttribute="top" secondItem="f6Y-9a-YCI" secondAttribute="topMargin" id="Qju-b2-7Iz"/>
                             <constraint firstItem="Ban-wj-7zs" firstAttribute="trailing" secondItem="f6Y-9a-YCI" secondAttribute="trailingMargin" id="Yxr-kM-hff"/>
                             <constraint firstItem="F9y-H9-y15" firstAttribute="centerX" secondItem="f6Y-9a-YCI" secondAttribute="centerX" id="a0o-Gb-jlz"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="cMx-b8-0Jk" secondAttribute="bottom" constant="128" id="c1f-NK-sYh"/>
+                            <constraint firstItem="cMx-b8-0Jk" firstAttribute="centerX" secondItem="f6Y-9a-YCI" secondAttribute="centerX" id="dQN-yD-107"/>
                             <constraint firstItem="Ban-wj-7zs" firstAttribute="leading" secondItem="f6Y-9a-YCI" secondAttribute="leadingMargin" id="rKx-mI-ct9"/>
                         </constraints>
                     </view>

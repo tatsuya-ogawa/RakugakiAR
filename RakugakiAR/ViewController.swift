@@ -12,7 +12,7 @@ import SwiftUI
 import UIKit
 
 class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
-
+    
     @IBOutlet weak var scnView: ARSCNView!
     // 輪郭描画用
     private var contourPathLayer: CAShapeLayer?
@@ -48,10 +48,10 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
         CGPoint(x: 0.0, y: 1.0),    // 左下
         CGPoint(x: 1.0, y: 1.0),    // 右下
     ]
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // シーンの設定
         self.setupScene()
         // AR Session 開始
@@ -61,22 +61,22 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
         configuration.planeDetection = [.horizontal]
         self.scnView.session.run(configuration, options: [.removeExistingAnchors, .resetTracking])
     }
-
+    
     // アンカーが追加された
     func renderer(_: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard anchor is ARPlaneAnchor else { return }
-
+        
         // 床ノードを追加
         let floorNode = makeFloorNode()
         DispatchQueue.main.async {
             node.addChildNode(floorNode)
         }
     }
-
+    
     // アンカーが更新された
     func renderer(_: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard anchor is ARPlaneAnchor else { return }
-
+        
         if let childNode = node.childNodes.first {
             DispatchQueue.main.async {
                 // 床ノードの位置を再設定
@@ -84,7 +84,7 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
             }
         }
     }
-
+    
     // ARフレームが更新された
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // キャプチャ画像をスクリーンで見える範囲に切り抜く
@@ -93,7 +93,7 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
         guard let contour = getFirstOutsideContour(screenImage: screenImage) else { return }
         // UIKitの座標系のCGPathを取得
         guard let path = getCGPathInUIKitSpace(contour: contour) else { return }
-
+        
         DispatchQueue.main.async {
             // 輪郭(2D)を描画
             self.drawContourPath(path)
@@ -108,7 +108,7 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
             }
         }
     }
-
+    
     private func setupScene() {
         // ディレクショナルライト追加
         let directionalLightNode = SCNNode()
@@ -141,17 +141,35 @@ class ViewController: UIViewController, ARSessionDelegate, ARSCNViewDelegate {
         self.cornerMarker4.isHidden = true
         self.scnView.scene.rootNode.addChildNode(self.cornerMarker4)
     }
-
+    
     // ジオメトリ化ボタンが押された
     @IBAction func pressButton(_ sender: Any) {
         isButtonPressed = true
     }
 }
+extension ViewController: SCNSceneExportDelegate{
+    @IBAction func writeButton(_ sender: Any) {
+        func export() throws -> URL {
+            let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let url = directory.appendingPathComponent("scaned.usdz")
+            self.scnView.scene.write(to: url, delegate: nil)
+            return url
+        }
+        func share(url: URL) {
+            let vc = UIActivityViewController(activityItems: [url],applicationActivities: nil)
+            vc.popoverPresentationController?.sourceView = sender as? UIView
+            self.present(vc, animated: true, completion: nil)
+        }
+        share(url:try! export())
+    }
+//    override func write(_ image: UIImage, withSceneDocumentURL documentURL: URL, originalImageURL: URL?) -> URL?{
+//    }
+}
 
 // MARK: - 輪郭検出関連
 
 extension ViewController {
-
+    
     private func getFirstOutsideContour(screenImage: CIImage) -> VNContour? {
         // 輪郭検出しやすいように画像処理を行う
         guard let preprocessedImage = preprocessForDetectContour(screenImage: screenImage) else { return nil }
@@ -171,9 +189,9 @@ extension ViewController {
             return nil
         }
     }
-
+    
     private func cropScreenImageFromCapturedImage(frame: ARFrame) -> CIImage {
-
+        
         let imageBuffer = frame.capturedImage
         // カメラキャプチャ画像をスクリーンサイズに変換
         // 参考 : https://stackoverflow.com/questions/58809070/transforming-arframecapturedimage-to-view-size
@@ -201,7 +219,7 @@ extension ViewController {
         let transformedImage = image.transformed(by: normalizeTransform.concatenating(flipTransform).concatenating(displayTransform).concatenating(toViewPortTransform)).cropped(to: self.scnView.bounds)
         return transformedImage
     }
-
+    
     private func preprocessForDetectContour(screenImage: CIImage) -> CIImage? {
         // 画像の暗い部分を広げて細い線を太くする。
         // WWDC2020(https://developer.apple.com/videos/play/wwdc2020/10673/)
@@ -227,7 +245,7 @@ extension ViewController {
 // MARK: - パス描画（2D）
 
 extension ViewController {
-
+    
     private func getCGPathInUIKitSpace(contour: VNContour) -> CGPath? {
         // UIKitで使うため、クリップしたときのサイズに拡大し、上下の座標を反転後、左上が (0,0)になるようにする
         let path = contour.normalizedPath
@@ -236,7 +254,7 @@ extension ViewController {
         let transPath = path.copy(using: &transform)
         return transPath
     }
-
+    
     private func drawContourPath(_ path: CGPath) {
         // 表示中のパスは消す
         if let layer = self.contourPathLayer {
@@ -262,11 +280,11 @@ extension ViewController {
 // MARK: - パス描画（3D）
 
 extension ViewController {
-
+    
     private func drawContour3DModel(normalizedPath: CGPath, captureImage: CIImage) {
         // ベジェパスをもとにノードを生成
         guard let node = makeNode(from: normalizedPath, captureImage: captureImage) else { return }
-
+        
         // 画面中央上の20cm上から落とす
         let screenCenter = CGPoint(x: self.view.bounds.width/2, y: self.view.bounds.height/2 - 150)
         guard var position = self.getWorldPosition(from: screenCenter) else { return }
@@ -274,10 +292,10 @@ extension ViewController {
         node.worldPosition = position
         self.scnView.scene.rootNode.addChildNode(node)
     }
-
+    
     // レイキャストでワールド座標を取得
     private func getWorldPosition(from: CGPoint) -> SCNVector3? {
-
+        
         guard let query = self.scnView.raycastQuery(from: from, allowing: .existingPlaneGeometry, alignment: .horizontal),
               let result = self.scnView.session.raycast(query).first else {
             return nil
@@ -285,7 +303,7 @@ extension ViewController {
         let p = result.worldTransform.columns.3
         return SCNVector3(p.x, p.y, p.z)
     }
-
+    
     private func makeFloorNode() -> SCNNode {
         // 落ちてくるノードを受け止めるためアンカーに大きめなSCNBoxを設定する。
         let geometry = SCNBox(width: 3.0, height: 3.0, length: self.floorThickness, chamferRadius: 0.0)
@@ -303,19 +321,19 @@ extension ViewController {
         node.physicsBody?.angularDamping = 1.0
         node.physicsBody?.linearRestingThreshold = 1.0
         node.physicsBody?.angularRestingThreshold = 1.0
-
+        
         return node
     }
-
+    
     private func makeMarkerNode() -> SCNNode {
-
+        
         let sphere = SCNSphere(radius: 0.001)
         let material = SCNMaterial()
         material.diffuse.contents = UIColor.red
         sphere.materials = [material]
         return SCNNode(geometry: sphere)
     }
-
+    
     private func convertPath(from normalizedPath: CGPath) -> UIBezierPath? {
         // 検出領域の四隅のワールド座標を取得
         let origin = CGPoint(x: self.view.bounds.width/2 - self.detectSize/2,
@@ -368,9 +386,9 @@ extension ViewController {
         print("path element count[\(elementCount)]")
         return geometryPath
     }
-
+    
     private func convertPathPoint(_ from: CGPoint) -> CGPoint {
-
+        
         guard let leftTop = self.leftTop,
               let rightTop = self.rightTop,
               let leftBottom = self.leftBottom,
@@ -386,11 +404,11 @@ extension ViewController {
             let t2 = pl * (pl - from.y) / 2   // t2の面積
             let t3 = pl * from.x / 2          // t3の面積
             let t1 = t - t2 - t3            // t1の面積
-
+            
             let ltRatio = t1 / t    // 左上座標の割合
             let rtRatio = t3 / t    // 右上座標の割合
             let lbRatio = t2 / t    // 左下座標の割合
-
+            
             // 各頂点の重みに応じてワールド座標を算出
             let p = leftTop * ltRatio + rightTop * rtRatio + leftBottom * lbRatio
             point.x = p.x.cg
@@ -401,11 +419,11 @@ extension ViewController {
             let t5 = pl * from.y / 2          // t5の面積
             let t6 = pl * (pl - from.x) / 2   // t6の面積
             let t4 = t - t5 - t6            // t4の面積
-
+            
             let rtRatio = t5 / t    // 右上座標の割合
             let lbRatio = t6 / t    // 左下座標の割合
             let rbRatio = t4 / t    // 右下座標の割合
-
+            
             // 各頂点の重みに応じてワールド座標を算出
             let p = rightTop * rtRatio + leftBottom * lbRatio + rightBottom * rbRatio
             point.x = p.x.cg
@@ -414,34 +432,33 @@ extension ViewController {
         // 後でSCNShapeに与える座標となるが、SCNShapeに小さい座標を与えると正しく表示されないのでいったん、拡大しておく。
         return point * self.tempGeometryScale
     }
-
+    
     private func makeNode(from normalizedPath: CGPath, captureImage: CIImage) -> SCNNode? {
         // 輪郭(CGPath)をワールド座標のUIBezierPathに変換
         guard let geometryPath = convertPath(from: normalizedPath) else { return nil }
-
+        
         // パスの厚みを持つノードと表面のテクスチャが貼られた平面ノードの親ノードを作成
         let node = SCNNode()
         node.position = SCNVector3(x: 0.0, y: 0.0, z: 0.0)
-
         // ベジェ曲線から3Dモデルを作成
         let pathShapeNode = makePathShapeNode(geometryPath: geometryPath)
         pathShapeNode.position = SCNVector3(x: 0.0, y: 0.0, z: 0.0)
         node.addChildNode(pathShapeNode)
-
+        
         // 3Dモデルの表面ノードを作成
         guard let shapeFaceNode = makeShapeFaceNode(from: normalizedPath, captureImage: captureImage) else { return nil }
         shapeFaceNode.eulerAngles = SCNVector3(x: Float.pi/2, y: 0, z: 0)
         shapeFaceNode.position = SCNVector3(0, 0.0, 0.0051) // 表面の位置になるように座標を調整
         node.addChildNode(shapeFaceNode)
-
+        
         // ノードに物理判定情報を設定
         node.physicsBody = makeShapePhysicsBody(from: pathShapeNode.geometry)
-
+        
         return node
     }
-
+    
     private func makePathShapeNode(geometryPath: UIBezierPath) -> SCNNode {
-
+        
         let geometry = SCNShape(path: geometryPath, extrusionDepth: 0.01 * self.tempGeometryScale)
         let node = SCNNode(geometry: geometry)
         // ベジェパスの座標計算時にいったん、拡大していたので縮小する
@@ -451,16 +468,16 @@ extension ViewController {
         material.diffuse.contents = UIColor.lightGray
         geometry.materials = [material]
         node.geometry = geometry
-
+        
         return node
     }
-
+    
     private func makeShapeFaceNode(from normalizedPath: CGPath, captureImage: CIImage) -> SCNNode? {
         // パスを塗りつぶす画像を生成
         var transform = CGAffineTransform(scaleX: detectSize, y: -detectSize)
         transform = transform.concatenating(CGAffineTransform(translationX: 0, y: detectSize))
         guard let transPath = normalizedPath.copy(using: &transform) else { return nil }
-
+        
         // パス描画のスケールを端末の種類によらず '1px/pt' に固定する。
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
@@ -473,48 +490,48 @@ extension ViewController {
         // 描いたパスをCGImage経由でCIImageに変換
         guard let maskCGImage = pathFillImage.cgImage else { return nil }
         let maskCIImage = CIImage(cgImage: maskCGImage)
-
+        
         // キャプチャした画像CIImageをCGImageに変換して再度、CIImageに戻す。
         // テクスチャ用のCIImageはCropしているせいだと思われるが、Filterをかけると、CIImage内部に持っている画像のオフセットが無視されて思ったようなフィルタをかけられない。
         let ciContext = CIContext(options: nil)
         guard let captureCGImage = ciContext.createCGImage(captureImage, from: captureImage.extent) else { return nil }
         let captureCIImage = CIImage(cgImage: captureCGImage)
-
+        
         // パスの内側だけキャプチャした画像を切り抜く
         let filter = CIFilter.multiplyCompositing()
         filter.inputImage = captureCIImage
         filter.backgroundImage = maskCIImage
         guard let texture = filter.outputImage else { return nil }
-
+        
         // テクスチャを貼るだけのノードを作る
         let textureNode = SCNNode()
         textureNode.geometry = makeShapeFaceGeometory(texture: texture)
-
+        
         return textureNode
     }
-
+    
     private func makeShapeFaceGeometory(texture: CIImage) -> SCNGeometry? {
         // パス検出範囲が四隅となる平面ジオメトリ を作成
         guard let lt = leftTop, let rt = rightTop, let lb = leftBottom, let rb = rightBottom else { return nil }
         let vertices = [ lt, rt, lb, rb ]
-
+        
         let verticeSource = SCNGeometrySource(vertices: vertices)
         let texcoordSource = SCNGeometrySource(textureCoordinates: self.texcoords)
         let geometryElement = SCNGeometryElement(indices: self.indices, primitiveType: .triangles)
         let geometry = SCNGeometry(sources: [verticeSource, texcoordSource], elements: [geometryElement])
-
+        
         // マテリアルにテクスチャを設定
         let context = CIContext(options: nil)
         let cgImage = context.createCGImage(texture, from: texture.extent)
         let matrial = SCNMaterial()
         matrial.diffuse.contents = cgImage
         geometry.materials = [matrial]
-
+        
         return geometry
     }
-
+    
     private func makeShapePhysicsBody(from: SCNGeometry?) -> SCNPhysicsBody? {
-
+        
         guard let geometry = from else { return nil }
         let bodyMax = geometry.boundingBox.max
         let bodyMin = geometry.boundingBox.min
@@ -530,7 +547,7 @@ extension ViewController {
         physicsBody.angularDamping = 1.0
         physicsBody.linearRestingThreshold = 1.0
         physicsBody.angularRestingThreshold = 1.0
-
+        
         return physicsBody
     }
 }
@@ -539,15 +556,15 @@ extension SCNVector3 {
     static func + (lhs: SCNVector3, rhs: SCNVector3) -> SCNVector3{
         return SCNVector3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z)
     }
-
+    
     static func - (lhs: SCNVector3, rhs: SCNVector3) -> SCNVector3{
         return SCNVector3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z)
     }
-
+    
     static func * (lhs: SCNVector3, rhs: CGFloat) -> SCNVector3{
         return SCNVector3(lhs.x * Float(rhs), lhs.y * Float(rhs), lhs.z * Float(rhs))
     }
-
+    
     static func / (lhs: SCNVector3, rhs: Float) -> SCNVector3{
         return SCNVector3(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs)
     }
