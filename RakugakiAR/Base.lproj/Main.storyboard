@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="RakugakiAR" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="f6Y-9a-YCI">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <arscnView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ban-wj-7zs">
+                                <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                            </arscnView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9y-H9-y15">
+                                <rect key="frame" x="88" y="732" width="248" height="67"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="256" id="4Tg-jb-n7p"/>
+                                    <constraint firstAttribute="height" constant="64" id="9XO-GK-f3B"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="ジオメトリ化"/>
+                                <connections>
+                                    <action selector="pressButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="D0O-Rh-HlF"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="ANU-Pq-rMf"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Ban-wj-7zs" firstAttribute="bottom" secondItem="f6Y-9a-YCI" secondAttribute="bottomMargin" id="0Un-N6-0hr"/>
+                            <constraint firstAttribute="bottom" secondItem="F9y-H9-y15" secondAttribute="bottom" constant="128" id="8u6-Xw-Zq3"/>
+                            <constraint firstItem="Ban-wj-7zs" firstAttribute="top" secondItem="f6Y-9a-YCI" secondAttribute="topMargin" id="Qju-b2-7Iz"/>
+                            <constraint firstItem="Ban-wj-7zs" firstAttribute="trailing" secondItem="f6Y-9a-YCI" secondAttribute="trailingMargin" id="Yxr-kM-hff"/>
+                            <constraint firstItem="F9y-H9-y15" firstAttribute="centerX" secondItem="f6Y-9a-YCI" secondAttribute="centerX" id="a0o-Gb-jlz"/>
+                            <constraint firstItem="Ban-wj-7zs" firstAttribute="leading" secondItem="f6Y-9a-YCI" secondAttribute="leadingMargin" id="rKx-mI-ct9"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="scnView" destination="Ban-wj-7zs" id="ERT-Ks-i9z"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="127.69230769230769" y="3.5545023696682461"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
